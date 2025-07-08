@@ -5,11 +5,17 @@ import "core:fmt"
 import mu "vendor:microui"
 import rl "vendor:raylib"
 
+monitor_refresh :: proc() -> i32 {
+	m := rl.GetCurrentMonitor()
+	refresh := rl.GetMonitorRefreshRate(m)
+	return refresh
+}
+
 main :: proc() {
 	rl.InitWindow(800, 600, "Hello world!")
 	rl.InitAudioDevice()
 
-	rl.SetTargetFPS(120)
+	rl.SetTargetFPS(monitor_refresh())
 
 	mu_ctx := new(microui_raylib.Context)
 	microui_raylib.init(mu_ctx)

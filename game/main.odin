@@ -1,6 +1,6 @@
 package main
 
-import "../microui_raylib"
+import "../ui"
 import "core:fmt"
 import mu "vendor:microui"
 import rl "vendor:raylib"
@@ -17,10 +17,7 @@ main :: proc() {
 
 	rl.SetTargetFPS(monitor_refresh())
 
-	mu_ctx := new(microui_raylib.Context)
-	microui_raylib.init(mu_ctx)
-
-	ctx := &mu_ctx.mu_ctx
+	ui.init()
 
 	// loop
 	running := true
@@ -28,44 +25,45 @@ main :: proc() {
 	for running {
 		running ~= rl.WindowShouldClose()
 
-		microui_raylib.update_input(mu_ctx)
+		ui.process_inputs()
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
 
 		// test window
-		mu.begin(ctx)
-		if mu.begin_window(ctx, "My Window", {10, 10, 140, 86}) {
-			mu.layout_row(ctx, {60, -1}, 0)
+		ui.begin()
 
-			mu.label(ctx, "First:")
-			if (mu.button(ctx, "Button1") == {.SUBMIT}) {
+		if ui.begin_window("My Window", {10, 10, 140, 86}) {
+			ui.layout_row({60, -1}, 0)
+
+			ui.label("First:")
+			if (ui.button("Button1") == {.SUBMIT}) {
 
 			}
 
-			mu.label(ctx, "Second:")
-			if (mu.button(ctx, "Button2") == {.SUBMIT}) {
-				mu.open_popup(ctx, "My Popup")
+			ui.label("Second:")
+			if (ui.button("Button2") == {.SUBMIT}) {
+				ui.open_popup("My Popup")
 			}
 
-			if (mu.begin_popup(ctx, "My Popup")) {
-				mu.label(ctx, "Hello world!")
-				mu.end_popup(ctx)
+			if (ui.begin_popup("My Popup")) {
+				ui.label("Hello world!")
+				ui.end_popup()
 			}
 
-			mu.end_window(ctx)
+			ui.end_window()
 		}
 
-		mu.end(&mu_ctx.mu_ctx)
+		ui.end()
 
+		ui.render()
 
-		microui_raylib.render(mu_ctx)
 
 		rl.DrawFPS(0, 0)
 		rl.EndDrawing()
 	}
 
-	microui_raylib.free(mu_ctx)
+	ui.free()
 	rl.CloseAudioDevice()
 	rl.CloseWindow()
 }

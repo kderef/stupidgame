@@ -1,5 +1,6 @@
 package game
 
+import "../assets"
 import "../ui"
 import "core:fmt"
 import mu "vendor:microui"
@@ -13,23 +14,30 @@ monitor_refresh :: proc() -> i32 {
 
 
 main :: proc() {
+	// --- setup
 	FLAGS :: rl.ConfigFlags{}
+	rl.SetConfigFlags(FLAGS)
 
+	// --- init context
 	rl.InitWindow(800, 600, "Hello world!")
 	rl.InitAudioDevice()
 
+	// --- load assets
+	err := assets.load("assets")
+	if err.kind != nil {
+		fmt.eprintfln("Failed to load assets: %v: %v", err.kind, err.what)
+		return
+	}
+	fmt.printfln("Loaded %v assets", assets.count())
+
+	// --- match monitor framerate
 	rl.SetTargetFPS(monitor_refresh())
 
 	ui.init()
 
-	target := rl.LoadRenderTexture(800, 600)
-
 	// loop -- state
-	running := true
-	scene := Scene.MenuMain
-
-	for running {
-		running ~= rl.WindowShouldClose()
+	for g_running {
+		g_running ~= rl.WindowShouldClose()
 
 		// update UI inputs
 		ui.process_inputs()
@@ -37,17 +45,14 @@ main :: proc() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
 
-		switch scene {
-		case .MenuMain:
+		rl.DrawTextEx(assets.font(.HackNF)^, "Hello world", {0, 0}, 100, 1, rl.WHITE)
+
+		switch g_scene {
+		case .Menu_Main:
 			scene_change := draw_main_menu()
-			if scene_change != nil {
-				switch scene_change.? {
-				case .Quit:
-					running = false
-				case .Menu_Back: // ...
-				case .Menu_Start: // ...
-				}
-			}
+			if scene_change != nil do handle_scene_change(scene_change)
+		case .Test:
+			game_draw()
 		}
 
 		ui.render()
@@ -57,6 +62,7 @@ main :: proc() {
 		rl.EndDrawing()
 	}
 
+	assets.unload()
 	ui.free()
 	rl.CloseAudioDevice()
 	rl.CloseWindow()

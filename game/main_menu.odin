@@ -2,7 +2,7 @@ package game
 
 import "../ui"
 
-draw_main_menu :: proc() -> (change: Maybe(SceneChange)) {
+draw_main_menu :: proc() -> (change: SceneChange) {
 	change = nil
 
 	// test window

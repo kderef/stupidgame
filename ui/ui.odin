@@ -4,7 +4,10 @@ import mur "../microui_raylib"
 import "base:builtin"
 import mu "vendor:microui"
 
+@(private)
 ctx: ^mur.Context = nil
+
+active: bool = true
 
 mu_ctx :: #force_inline proc() -> ^mu.Context {
 	return &ctx.mu_ctx
@@ -29,7 +32,7 @@ Pool_Item :: mu.Pool_Item
 SLIDER_FMT :: mu.SLIDER_FMT
 
 process_inputs :: #force_inline proc() {
-	mur.update_input(ctx)
+	if active do mur.update_input(ctx)
 }
 
 init :: #force_inline proc() {
@@ -50,7 +53,7 @@ free :: #force_inline proc() {
 }
 
 render :: #force_inline proc() {
-	mur.render(ctx)
+	if active do mur.render(ctx)
 }
 
 
@@ -81,6 +84,13 @@ bring_to_front :: #force_inline proc(cnt: ^Container) {
 	mu.bring_to_front(mu_ctx(), cnt)
 }
 
+button_clicked :: #force_inline proc(
+	label: string,
+	icon: Icon = .NONE,
+	opt: Options = {.ALIGN_CENTER},
+) -> bool {
+	return button(label, icon, opt) == {.SUBMIT}
+}
 
 button :: #force_inline proc(
 	label: string,
@@ -413,7 +423,7 @@ textbox_raw :: #force_inline proc(
 	textlen: ^int,
 	id: Id,
 	r: Rect,
-	opt: Options = Options{},
+	opt: Options = {},
 ) -> (
 	res: bit_set[Result;u32],
 ) {

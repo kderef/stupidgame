@@ -1,4 +1,4 @@
-package main
+package game
 
 import "../ui"
 import "core:fmt"
@@ -11,7 +11,10 @@ monitor_refresh :: proc() -> i32 {
 	return refresh
 }
 
+
 main :: proc() {
+	FLAGS :: rl.ConfigFlags{}
+
 	rl.InitWindow(800, 600, "Hello world!")
 	rl.InitAudioDevice()
 
@@ -19,42 +22,33 @@ main :: proc() {
 
 	ui.init()
 
-	// loop
+	target := rl.LoadRenderTexture(800, 600)
+
+	// loop -- state
 	running := true
+	scene := Scene.MenuMain
 
 	for running {
 		running ~= rl.WindowShouldClose()
 
+		// update UI inputs
 		ui.process_inputs()
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
 
-		// test window
-		ui.begin()
-
-		if ui.begin_window("My Window", {10, 10, 140, 86}) {
-			ui.layout_row({60, -1}, 0)
-
-			ui.label("First:")
-			if (ui.button("Button1") == {.SUBMIT}) {
-
+		switch scene {
+		case .MenuMain:
+			scene_change := draw_main_menu()
+			if scene_change != nil {
+				switch scene_change.? {
+				case .Quit:
+					running = false
+				case .Menu_Back: // ...
+				case .Menu_Start: // ...
+				}
 			}
-
-			ui.label("Second:")
-			if (ui.button("Button2") == {.SUBMIT}) {
-				ui.open_popup("My Popup")
-			}
-
-			if (ui.begin_popup("My Popup")) {
-				ui.label("Hello world!")
-				ui.end_popup()
-			}
-
-			ui.end_window()
 		}
-
-		ui.end()
 
 		ui.render()
 

@@ -10,13 +10,20 @@ Context :: struct {
 	log_buf:         [1 << 16]byte,
 	log_buf_len:     int,
 	log_buf_updated: bool,
-	bg:              mu.Color,
 	atlas_texture:   rl.Texture2D,
 }
 
-init :: proc(ctx: ^Context) {
-	ctx.bg = mu.Color{90, 95, 100, 255}
 
+text_width :: proc(font: mu.Font, text: string) -> i32 {
+	w := mu.default_atlas_text_width(font, text)
+	return w
+}
+text_height :: proc(font: mu.Font) -> i32 {
+	h := mu.default_atlas_text_height(font)
+	return h
+}
+
+init :: proc(ctx: ^Context) {
 	// Build texture atlas
 	pixels := make([][4]u8, mu.DEFAULT_ATLAS_WIDTH * mu.DEFAULT_ATLAS_HEIGHT)
 	for alpha, i in mu.default_atlas_alpha {
@@ -34,8 +41,8 @@ init :: proc(ctx: ^Context) {
 	ctx.atlas_texture = rl.LoadTextureFromImage(img)
 
 	mu.init(&ctx.mu_ctx)
-	ctx.mu_ctx.text_width = mu.default_atlas_text_width
-	ctx.mu_ctx.text_height = mu.default_atlas_text_height
+	ctx.mu_ctx.text_width = text_width
+	ctx.mu_ctx.text_height = text_height
 }
 
 free :: proc(ctx: ^Context) {
